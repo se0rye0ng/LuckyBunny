@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: a3aee6d3411233347bac49948c6e38cc
+guid: 2790166d46c22e649bc3c024200da922
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1069746544114069834
-    second: tile_new_02_0
+      213: 775471214058256909
+    second: Clover_01_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +51,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 400
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -96,17 +96,30 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: tile_new_02_0
+      name: Clover_01_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 17
         y: 0
-        width: 128
-        height: 128
+        width: 219
+        height: 250
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: a41fe9960d088de00800000000000000
-      internalID: 1069746544114069834
+      spriteID: d0abb77e5f603ca00800000000000000
+      internalID: 775471214058256909
       vertices: []
       indices: 
       edges: []
@@ -135,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      tile_new_02_0: 1069746544114069834
+      Clover_01_0: 775471214058256909
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
