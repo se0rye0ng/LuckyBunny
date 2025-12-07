@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class OPlayerController : MonoBehaviour
@@ -14,6 +15,13 @@ public class OPlayerController : MonoBehaviour
     private int clover = 0;
     private SpriteRenderer spriteRenderer;
     private Vector3 startPosition; // 리스폰용 시작위치
+    private float baseMoveSpeed;
+    private Coroutine speedBoostCoroutine;
+    // size boost fields
+    public float sizeBoostMultiplier = 1.5f; // 1.5배 (50% 증가)
+    public float sizeBoostDuration = 5f; // seconds, 0 = permanent
+    private Vector3 originalScale;
+    private Coroutine sizeBoostCoroutine;
 
     void Update()
     {
@@ -24,13 +32,13 @@ public class OPlayerController : MonoBehaviour
         {
             moveX = -1f;  // 왼쪽
             spriteRenderer.flipX = false;
-            Debug.Log("왼쪽으로 이동 중!");
+            //Debug.Log("왼쪽으로 이동 중!");
         }
         if (Input.GetKey(KeyCode.D))
         {
             moveX = 1f;   // 오른쪽
             spriteRenderer.flipX = true;
-            Debug.Log("오른쪽으로 이동 중!");
+            //Debug.Log("오른쪽으로 이동 중!");
         }
 
         // 물리 기반 이동
@@ -57,13 +65,13 @@ public class OPlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.S))
         {
             transform.Translate(Vector3.down * moveSpeed * Time.deltaTime);
-            Debug.Log("아래쪽으로 이동 중!");
+            //Debug.Log("아래쪽으로 이동 중!");
         }
 
         if (Input.GetKey(KeyCode.W))
         {
             transform.Translate(Vector3.up * moveSpeed * Time.deltaTime);
-            Debug.Log("위쪽으로 이동 중!");
+            //Debug.Log("위쪽으로 이동 중!");
         }
 
     }
@@ -73,11 +81,26 @@ public class OPlayerController : MonoBehaviour
         {
             clover++;  // 점수 증가
             Debug.Log("클로버 획득! 현재 점수: " + clover);
-            Destroy(other.gameObject);  // 코인 제거
+            Destroy(other.gameObject);  // 제거
+        }
+
+        if (other.CompareTag("Yellowclover"))
+        {
+            // 노란 클로버: 이동속도 일시 증가 (5초)
+            ApplySpeedBoost(2.0f, 5f); // 1.5배, 5초
+            Debug.Log("노란 클로버 획득! 임시 스피드 적용: " + moveSpeed);
+            Destroy(other.gameObject);  // 제거
+        }
+
+        if (other.CompareTag("Purpleclover"))
+        {
+            // 보라 클로버: 캐릭터 사이즈 일시 증가
+            ApplySizeBoost(sizeBoostMultiplier, sizeBoostDuration);
+            Debug.Log("보라 클로버 획득! 임시 사이즈 적용: " + sizeBoostMultiplier);
+            Destroy(other.gameObject);
         }
     }
-    
-    
+
     void OnCollisionEnter2D(Collision2D collision)
     {
         // 장애물 충돌 감지 - 새로 추가!
@@ -105,5 +128,52 @@ public class OPlayerController : MonoBehaviour
         {
             Debug.LogWarning("OPlayerController: Rigidbody2D가 없습니다. 물리 기반 이동/점프가 작동하지 않습니다.");
         }
+        baseMoveSpeed = moveSpeed;
+        originalScale = transform.localScale;
+    }
+
+    void ApplySpeedBoost(float multiplier, float duration)
+    {
+        if (speedBoostCoroutine != null)
+        {
+            StopCoroutine(speedBoostCoroutine);
+            speedBoostCoroutine = null;
+            // 복원 전에 baseMoveSpeed는 그대로 유지되므로 중첩일 때도 정상 동작
+        }
+        speedBoostCoroutine = StartCoroutine(SpeedBoostCoroutine(multiplier, duration));
+    }
+
+    IEnumerator SpeedBoostCoroutine(float multiplier, float duration)
+    {
+        moveSpeed = baseMoveSpeed * multiplier;
+        yield return new WaitForSeconds(duration);
+        moveSpeed = baseMoveSpeed;
+        speedBoostCoroutine = null;
+    }
+
+    void ApplySizeBoost(float multiplier, float duration)
+    {
+        if (sizeBoostCoroutine != null)
+        {
+            StopCoroutine(sizeBoostCoroutine);
+            sizeBoostCoroutine = null;
+        }
+        if (duration <= 0f)
+        {
+            // permanent
+            transform.localScale = originalScale * multiplier;
+        }
+        else
+        {
+            sizeBoostCoroutine = StartCoroutine(SizeBoostCoroutine(multiplier, duration));
+        }
+    }
+
+    IEnumerator SizeBoostCoroutine(float multiplier, float duration)
+    {
+        transform.localScale = originalScale * multiplier;
+        yield return new WaitForSeconds(duration);
+        transform.localScale = originalScale;
+        sizeBoostCoroutine = null;
     }
 }
