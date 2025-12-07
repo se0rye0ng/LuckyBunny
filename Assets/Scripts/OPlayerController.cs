@@ -13,20 +13,39 @@ public class OPlayerController : MonoBehaviour
 
     private Rigidbody2D rb;
     private int clover = 0;
+    // 외부에서 점수(클로버 수)를 읽을 수 있게 프로퍼티 추가
+    public int CloverCount => clover;
     private SpriteRenderer spriteRenderer;
     private Vector3 startPosition; // 리스폰용 시작위치
     private float baseMoveSpeed;
     private Coroutine speedBoostCoroutine;
-    // size boost fields
+    // 사이즈 부스트 필드
     public float sizeBoostMultiplier = 1.5f; // 1.5배 (50% 증가)
-    public float sizeBoostDuration = 5f; // seconds, 0 = permanent
+    public float sizeBoostDuration = 5f; // 초 단위, 0이면 영구
     private Vector3 originalScale;
     private Coroutine sizeBoostCoroutine;
+    // 이동 제어
+    private bool movementEnabled = true;
+    private Coroutine movementBlockCoroutine;
 
     void Update()
     {
         // 입력 감지
         float moveX = 0f;
+
+        if (!movementEnabled)
+        {
+            // 이동이 차단된 경우 수평 입력이나 flip 처리를 하지 않음
+            // 단, 물리(중력/점프)는 계속 작동하도록 허용함
+            if (rb != null)
+            {
+                // 차단 중에는 수평 속도가 0이 되도록 함
+                var velLock = rb.linearVelocity;
+                velLock.x = 0f;
+                rb.linearVelocity = velLock;
+            }
+            return;
+        }
         
         if (Input.GetKey(KeyCode.A))
         {
@@ -160,7 +179,7 @@ public class OPlayerController : MonoBehaviour
         }
         if (duration <= 0f)
         {
-            // permanent
+            // 영구(복원 없음)
             transform.localScale = originalScale * multiplier;
         }
         else
@@ -175,5 +194,30 @@ public class OPlayerController : MonoBehaviour
         yield return new WaitForSeconds(duration);
         transform.localScale = originalScale;
         sizeBoostCoroutine = null;
+    }
+
+    // 플레이어가 통과하지 못하도록 뒤로 밀고 잠시 이동을 비활성화
+    public void PreventPassage(Vector2 pushDirection, float pushDistance = 0.5f, float disableDuration = 0.5f)
+    {
+        if (movementBlockCoroutine != null)
+        {
+            StopCoroutine(movementBlockCoroutine);
+            movementBlockCoroutine = null;
+        }
+        movementBlockCoroutine = StartCoroutine(PreventPassageCoroutine(pushDirection, pushDistance, disableDuration));
+    }
+
+    IEnumerator PreventPassageCoroutine(Vector2 pushDirection, float pushDistance, float disableDuration)
+    {
+        movementEnabled = false;
+        // 플레이어를 골에서 멀어지게 밀어냄
+        transform.position += (Vector3)(pushDirection.normalized * pushDistance);
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+        }
+        yield return new WaitForSeconds(disableDuration);
+        movementEnabled = true;
+        movementBlockCoroutine = null;
     }
 }
