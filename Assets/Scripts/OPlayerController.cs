@@ -60,25 +60,10 @@ public class OPlayerController : MonoBehaviour
             //Debug.Log("오른쪽으로 이동 중!");
         }
 
-        // 물리 기반 이동
-        if (rb != null)
-        {
-            var vel = rb.linearVelocity;
-            vel.x = moveX * moveSpeed;
-            rb.linearVelocity = vel;
-        }
+        // Transform 기반 이동 (무중력 모드)
+        transform.Translate(Vector3.right * moveX * moveSpeed * Time.deltaTime);
     
-        // 점프 입력 처리 (새로 추가!)
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (rb != null)
-            {
-                var vel = rb.linearVelocity;
-                vel.y = jumpForce;
-                rb.linearVelocity = vel;
-                Debug.Log("점프!");
-            }
-        }
+        // 점프 비활성화: 점프 입력 제거 (무중력 모드)
 
 
         if (Input.GetKey(KeyCode.S))
@@ -131,7 +116,7 @@ public class OPlayerController : MonoBehaviour
             transform.position = startPosition;
             
             // 속도 초기화 (안 하면 계속 날아감)
-            rb.linearVelocity = Vector2.zero;
+            // Rigidbody 기반 속도 제어를 사용하지 않으므로 별도 처리 없음
         }
     }
 
@@ -148,6 +133,11 @@ public class OPlayerController : MonoBehaviour
             Debug.LogWarning("OPlayerController: Rigidbody2D가 없습니다. 물리 기반 이동/점프가 작동하지 않습니다.");
         }
         baseMoveSpeed = moveSpeed;
+        // 무중력 모드: Rigidbody가 존재하면 중력 효과 제거
+        if (rb != null)
+        {
+            rb.gravityScale = 0f;
+        }
         originalScale = transform.localScale;
     }
 
@@ -212,10 +202,7 @@ public class OPlayerController : MonoBehaviour
         movementEnabled = false;
         // 플레이어를 골에서 멀어지게 밀어냄
         transform.position += (Vector3)(pushDirection.normalized * pushDistance);
-        if (rb != null)
-        {
-            rb.linearVelocity = Vector2.zero;
-        }
+        // Rigidbody 속도 제어를 사용하지 않으므로 별도 초기화 없음
         yield return new WaitForSeconds(disableDuration);
         movementEnabled = true;
         movementBlockCoroutine = null;
