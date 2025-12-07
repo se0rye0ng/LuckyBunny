@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: fb3ff2432b087cc43a74591ab6fc5446
+guid: 3176a7a03fec3b446a1b571ba2d6da46
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6873769582526992477
-    second: RabbitCha_0
+      213: -2466100065704750060
+    second: Clover_02_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 0
+    textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: RabbitCha_0
+      name: Clover_02_0
       rect:
         serializedVersion: 2
-        x: 121
-        y: 101
-        width: 536
-        height: 861
+        x: 17
+        y: 0
+        width: 217
+        height: 250
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d50186a3409846f50800000000000000
-      internalID: 6873769582526992477
+      spriteID: 414d9136e07a6cdd0800000000000000
+      internalID: -2466100065704750060
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      RabbitCha_0: 6873769582526992477
+      Clover_02_0: -2466100065704750060
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

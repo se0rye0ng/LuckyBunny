@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Clover
   - Obstacle
+  - Enemy
   layers:
   - Default
   - TransparentFX
