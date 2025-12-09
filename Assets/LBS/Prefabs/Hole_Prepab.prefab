@@ -149,6 +149,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   itemRenderer: {fileID: 6231775486746921056}
+  connectedHole: {fileID: 0}
   redClover: {fileID: 21300000, guid: 1d54f40754c57c94fa2b6ddb2a7d3285, type: 3}
   greenClover: {fileID: 21300000, guid: bb2296450e96e1a4a9b270e318403777, type: 3}
   pinkClover: {fileID: 21300000, guid: c3ff3e688f5d0414eb2f5cd0c09ca28e, type: 3}
@@ -180,8 +181,8 @@ Transform:
   m_GameObject: {fileID: 6455988828937254745}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.25, y: 0.05, z: 0}
+  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8793737214459484166}

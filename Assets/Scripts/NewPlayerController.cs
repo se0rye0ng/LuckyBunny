@@ -4,6 +4,16 @@ using System.Collections;
 public class NewPlayerController : MonoBehaviour
 {
     public float moveCooldown = 0.15f; 
+    
+    [Header("이동 거리 설정")]
+    public float moveStepX = 1.0f; 
+    public float moveStepY = 1.0f; 
+    
+    [Header("텔레포트 위치 보정")]
+    public float teleportOffsetX = 0f; // 가로 보정 (0이면 구멍 중앙)
+    public float teleportOffsetY = 0.5f; // 세로 보정 (0.5면 반 칸 위)
+
+    [Header("연결 요소")]
     public Transform gridParent; 
     public GameObject fogEffect; 
 
@@ -20,13 +30,12 @@ public class NewPlayerController : MonoBehaviour
 
     void Update()
     {
-        // --- 1. 이동 로직 ---
+        // 1. 이동 로직
         if (Time.time >= lastMoveTime + moveCooldown)
         {
             float xInput = Input.GetAxisRaw("Horizontal"); 
             float yInput = Input.GetAxisRaw("Vertical");   
 
-            // 저주 걸렸으면 반대로
             if (isInverted)
             {
                 xInput = -xInput;
@@ -43,15 +52,16 @@ public class NewPlayerController : MonoBehaviour
                 else if (xInput > 0) facingDir = 3; 
                 
                 anim.SetInteger("Direction", facingDir);
-                transform.position += new Vector3(xInput, yInput, 0);
+                
+                transform.position += new Vector3(xInput * moveStepX, yInput * moveStepY, 0);
+                
                 lastMoveTime = Time.time;
             }
         }
         
-        // --- 2. 상호작용 로직 ---
+        // 2. 상호작용 로직
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // [수정] 인식 범위 0.7f로 대폭 확대 (이제 대충 서도 잡힘)
             Collider2D hit = Physics2D.OverlapCircle(transform.position, 0.7f);
             
             if (hit != null)
@@ -65,7 +75,15 @@ public class NewPlayerController : MonoBehaviour
                     if (holeScript.connectedHole != null)
                     {
                         Debug.Log("토끼굴 이동!");
-                        transform.position = holeScript.connectedHole.transform.position;
+                        
+                        // 목표 위치 가져오기
+                        Vector3 targetPos = holeScript.connectedHole.transform.position;
+                        
+                        // [X, Y 보정값 적용]
+                        targetPos.x += teleportOffsetX;
+                        targetPos.y += teleportOffsetY; 
+                        
+                        transform.position = targetPos;
                         lastMoveTime = Time.time; 
                         return; 
                     }
@@ -75,10 +93,9 @@ public class NewPlayerController : MonoBehaviour
                     
                     if (type != -1)
                     {
-                        // 매니저에게 점수 계산 요청
-                        Stage2Manager.instance.AddScore(type);
+                        if (Stage2Manager.instance != null)
+                            Stage2Manager.instance.AddScore(type);
 
-                        // 빨간색(0번)이면 저주(조작반전)도 같이 검
                         if (type == 0)
                         {
                             StopCoroutine("InvertRoutine");
@@ -93,14 +110,14 @@ public class NewPlayerController : MonoBehaviour
             }
             else
             {
-                Debug.Log("너무 멉니다. 조금 더 가까이 가보세요.");
+                Debug.Log("너무 멉니다.");
             }
         }
     }
 
     IEnumerator InvertRoutine()
     {
-        Debug.Log("저주 시작! (조작 반전)");
+        Debug.Log("저주 시작!");
         isInverted = true;
         if(fogEffect != null) fogEffect.SetActive(true);
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
