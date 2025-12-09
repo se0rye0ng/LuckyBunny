@@ -1,11 +1,11 @@
 using UnityEngine;
-using TMPro; // 텍스트 매쉬 프로 사용
-using UnityEngine.SceneManagement; // 나중에 씬 이동 등을 위해
+using TMPro; 
+using UnityEngine.SceneManagement; // 씬 재시작을 위해 필수
 
 public class Stage2Manager : MonoBehaviour
 {
     [Header("게임 설정")]
-    public float gameTime = 60.0f; // 제한 시간 60초
+    public float gameTime = 60.0f; // 제한 시간
     public int targetScore = 20;   // 목표 점수
 
     [Header("연결할 UI들")]
@@ -17,18 +17,16 @@ public class Stage2Manager : MonoBehaviour
     public Hole[] holes;
     public float spawnInterval = 1.0f;
 
-    // 내부 변수
     private float currentTimer;
     private int currentScore = 0;
     private float spawnTimer = 0f;
     private bool isGameActive = true;
 
-    // 싱글톤 패턴 (어디서든 매니저를 부르기 쉽게 만듦)
     public static Stage2Manager instance;
 
     void Awake()
     {
-        instance = this; // "내가 관리자다" 선언
+        instance = this; 
     }
 
     void Start()
@@ -45,14 +43,23 @@ public class Stage2Manager : MonoBehaviour
         // 1. 시간 줄이기
         currentTimer -= Time.deltaTime;
         
-        // 시간 초과 체크
+        // 2. 시간 초과 체크 (실패 조건)
         if (currentTimer <= 0)
         {
             currentTimer = 0;
-            GameOver();
+            // 시간이 끝났는데 점수가 모자라면 실패 -> 재시작
+            if (currentScore < targetScore)
+            {
+                GameOverAndRestart();
+            }
+            else
+            {
+                // (혹시 모르니) 시간이 끝났는데 점수는 넘었다면 클리어 처리
+                GameClear();
+            }
         }
 
-        // 2. 구멍 생성 타이머
+        // 3. 구멍 생성
         spawnTimer += Time.deltaTime;
         if (spawnTimer >= spawnInterval)
         {
@@ -60,22 +67,40 @@ public class Stage2Manager : MonoBehaviour
             spawnTimer = 0f;
         }
 
-        // 3. UI 갱신
         UpdateUI();
     }
 
-    // 플레이어가 클로버를 먹었을 때 호출하는 함수
     public void AddScore(int type)
     {
         if (!isGameActive) return;
 
-        // 분홍(2)은 3점, 나머지(0,1)는 1점
-        int points = (type == 2) ? 3 : 1; 
+        int points = 0;
+
+        // [점수 로직 수정]
+        if (type == 0) // 빨강
+        {
+            points = -1;
+            Debug.Log("빨간 클로버! -1점! 으악!");
+        }
+        else if (type == 1) // 초록
+        {
+            points = 1;
+            Debug.Log("초록 클로버! +1점");
+        }
+        else if (type == 2) // 분홍
+        {
+            points = 3;
+            Debug.Log("분홍 클로버! +3점 대박!");
+        }
         
         currentScore += points;
+
+        // [요청] 콘솔창에 현재 점수 띄우기
+        Debug.Log($"현재 총 점수: {currentScore} / {targetScore}");
+
         UpdateUI();
 
-        // 목표 달성 체크
+        // 목표 점수 도달 시 즉시 클리어
         if (currentScore >= targetScore)
         {
             GameClear();
@@ -85,10 +110,10 @@ public class Stage2Manager : MonoBehaviour
     void UpdateUI()
     {
         if (timeText != null)
-            timeText.text = $"Time: {currentTimer:F1}"; // 소수점 한자리까지
+            timeText.text = $"Time: {currentTimer:F1}";
 
         if (scoreText != null)
-            scoreText.text = $"Clovers: {currentScore} / {targetScore}";
+            scoreText.text = $"Score: {currentScore} / {targetScore}";
     }
 
     void TrySpawnRandom()
@@ -107,15 +132,16 @@ public class Stage2Manager : MonoBehaviour
     {
         isGameActive = false;
         if (clearText != null) clearText.SetActive(true);
-        Time.timeScale = 0; // 시간 정지
-        Debug.Log("스테이지 클리어!");
+        Time.timeScale = 0; 
+        Debug.Log("축하합니다! 스테이지 클리어!");
     }
 
-    void GameOver()
+    void GameOverAndRestart()
     {
         isGameActive = false;
-        Debug.Log("타임 오버! 실패!");
-        // 여기에 실패 UI를 띄우거나 재시작 로직 추가 가능
-        Time.timeScale = 0;
+        Debug.Log("시간 종료! 목표 점수 미달로 재시작합니다.");
+        
+        // 현재 씬을 다시 로드 (재시작)
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

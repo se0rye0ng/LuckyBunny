@@ -20,12 +20,13 @@ public class NewPlayerController : MonoBehaviour
 
     void Update()
     {
-        // 1. 이동 로직
+        // --- 1. 이동 로직 ---
         if (Time.time >= lastMoveTime + moveCooldown)
         {
             float xInput = Input.GetAxisRaw("Horizontal"); 
             float yInput = Input.GetAxisRaw("Vertical");   
 
+            // 저주 걸렸으면 반대로
             if (isInverted)
             {
                 xInput = -xInput;
@@ -47,11 +48,11 @@ public class NewPlayerController : MonoBehaviour
             }
         }
         
-        // 2. 상호작용 로직 (텔레포트 확인)
+        // --- 2. 상호작용 로직 ---
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            // 반지름 0.2f 원 안에 걸리는 게 있는지 확인
-            Collider2D hit = Physics2D.OverlapCircle(transform.position, 0.2f);
+            // [수정] 인식 범위 0.7f로 대폭 확대 (이제 대충 서도 잡힘)
+            Collider2D hit = Physics2D.OverlapCircle(transform.position, 0.7f);
             
             if (hit != null)
             {
@@ -60,33 +61,46 @@ public class NewPlayerController : MonoBehaviour
 
                 if (holeScript != null)
                 {
-                    // [텔레포트] 연결된 구멍이 있다면 이동!
+                    // [텔레포트]
                     if (holeScript.connectedHole != null)
                     {
-                        Debug.Log("토끼굴 발견! 이동합니다.");
+                        Debug.Log("토끼굴 이동!");
                         transform.position = holeScript.connectedHole.transform.position;
-                        lastMoveTime = Time.time; // 이동 직후 실수 방지 쿨타임
-                        return; // 텔레포트 했으면 아래 코드는 실행 안 함
+                        lastMoveTime = Time.time; 
+                        return; 
                     }
 
                     // [클로버 수확]
                     int type = holeScript.OnInteract(); 
+                    
                     if (type != -1)
                     {
+                        // 매니저에게 점수 계산 요청
                         Stage2Manager.instance.AddScore(type);
+
+                        // 빨간색(0번)이면 저주(조작반전)도 같이 검
                         if (type == 0)
                         {
                             StopCoroutine("InvertRoutine");
                             StartCoroutine("InvertRoutine");
                         }
                     }
+                    else
+                    {
+                        Debug.Log("빈 구멍입니다.");
+                    }
                 }
+            }
+            else
+            {
+                Debug.Log("너무 멉니다. 조금 더 가까이 가보세요.");
             }
         }
     }
 
     IEnumerator InvertRoutine()
     {
+        Debug.Log("저주 시작! (조작 반전)");
         isInverted = true;
         if(fogEffect != null) fogEffect.SetActive(true);
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -97,5 +111,6 @@ public class NewPlayerController : MonoBehaviour
         isInverted = false; 
         if(fogEffect != null) fogEffect.SetActive(false); 
         sr.color = Color.white; 
+        Debug.Log("저주 해제.");
     }
 }
