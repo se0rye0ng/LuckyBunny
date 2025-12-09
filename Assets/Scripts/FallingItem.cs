@@ -33,7 +33,7 @@ public class FallingItem : MonoBehaviour
                     if (!isBad)
                     {
                         Rigidbody2D rb = GetComponent<Rigidbody2D>();
-                        if (rb != null) { rb.linearVelocity = Vector2.zero; rb.isKinematic = true; rb.simulated = false; }
+                        if (rb != null) { rb.linearVelocity = Vector2.zero; rb.bodyType = RigidbodyType2D.Kinematic; rb.simulated = false; }
                         BoxCollider2D col = GetComponent<BoxCollider2D>();
                         if (col != null) col.enabled = false;
                     }

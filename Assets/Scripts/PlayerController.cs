@@ -85,7 +85,7 @@ public class PlayerController : MonoBehaviour
         if (rb != null)
         {
             rb.simulated = true;
-            rb.isKinematic = false;
+            rb.bodyType = RigidbodyType2D.Dynamic;
             rb.linearVelocity = Vector2.zero;
             rb.AddForce(new Vector2(Random.Range(-1f, 1f), 2f), ForceMode2D.Impulse);
             rb.AddTorque(Random.Range(-30f, 30f));
