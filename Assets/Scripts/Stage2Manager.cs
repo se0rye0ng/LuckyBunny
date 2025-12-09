@@ -1,17 +1,17 @@
 using UnityEngine;
 using TMPro; 
-using UnityEngine.SceneManagement; // 씬 재시작을 위해 필수
+using UnityEngine.SceneManagement; 
 
 public class Stage2Manager : MonoBehaviour
 {
     [Header("게임 설정")]
     public float gameTime = 60.0f; // 제한 시간
-    public int targetScore = 20;   // 목표 점수
+    public int targetScore = 20;   // 목표 점수 (분모로 표시됨)
 
     [Header("연결할 UI들")]
-    public TextMeshProUGUI timeText;
-    public TextMeshProUGUI scoreText;
-    public GameObject clearText;
+    public TextMeshProUGUI timeText;  // 시간 표시용 텍스트
+    public TextMeshProUGUI scoreText; // 점수 표시용 텍스트 (여기에 1/20 표시)
+    public GameObject clearText;      // 클리어 시 뜰 텍스트
 
     [Header("구멍 시스템")]
     public Hole[] holes;
@@ -33,7 +33,9 @@ public class Stage2Manager : MonoBehaviour
     {
         holes = FindObjectsByType<Hole>(FindObjectsSortMode.None);
         currentTimer = gameTime;
-        UpdateUI();
+        
+        // 게임 시작하자마자 0 / 20 이라고 뜨게 갱신
+        UpdateUI(); 
     }
 
     void Update()
@@ -43,18 +45,16 @@ public class Stage2Manager : MonoBehaviour
         // 1. 시간 줄이기
         currentTimer -= Time.deltaTime;
         
-        // 2. 시간 초과 체크 (실패 조건)
+        // 2. 시간 초과 체크
         if (currentTimer <= 0)
         {
             currentTimer = 0;
-            // 시간이 끝났는데 점수가 모자라면 실패 -> 재시작
             if (currentScore < targetScore)
             {
                 GameOverAndRestart();
             }
             else
             {
-                // (혹시 모르니) 시간이 끝났는데 점수는 넘었다면 클리어 처리
                 GameClear();
             }
         }
@@ -67,6 +67,7 @@ public class Stage2Manager : MonoBehaviour
             spawnTimer = 0f;
         }
 
+        // 매 프레임 UI 갱신 (시간이 계속 흐르므로)
         UpdateUI();
     }
 
@@ -76,44 +77,35 @@ public class Stage2Manager : MonoBehaviour
 
         int points = 0;
 
-        // [점수 로직 수정]
-        if (type == 0) // 빨강
-        {
-            points = -1;
-            Debug.Log("빨간 클로버! -1점! 으악!");
-        }
-        else if (type == 1) // 초록
-        {
-            points = 1;
-            Debug.Log("초록 클로버! +1점");
-        }
-        else if (type == 2) // 분홍
-        {
-            points = 3;
-            Debug.Log("분홍 클로버! +3점 대박!");
-        }
-        
+        if (type == 0) points = -1; // 빨강
+        else if (type == 1) points = 1; // 초록
+        else if (type == 2) points = 3; // 분홍
+        else if (type == -1) points = -1; // 빈 구멍
+
         currentScore += points;
 
-        // [요청] 콘솔창에 현재 점수 띄우기
-        Debug.Log($"현재 총 점수: {currentScore} / {targetScore}");
-
+        // 점수가 바뀌었으니 UI 갱신
         UpdateUI();
 
-        // 목표 점수 도달 시 즉시 클리어
         if (currentScore >= targetScore)
         {
             GameClear();
         }
     }
 
+    // [핵심] 화면 표시 내용 설정하는 함수
     void UpdateUI()
     {
+        // 1. 시간 표시 (소수점 없이 정수로 깔끔하게)
         if (timeText != null)
-            timeText.text = $"Time: {currentTimer:F1}";
+            timeText.text = $"Time: {currentTimer:F0}";
 
+        // 2. 점수 표시 (요청하신 1 / 20 형식)
         if (scoreText != null)
-            scoreText.text = $"Score: {currentScore} / {targetScore}";
+        {
+            // 예: "3 / 20" 처럼 표시됨
+            scoreText.text = $"{currentScore} / {targetScore}"; 
+        }
     }
 
     void TrySpawnRandom()
@@ -133,15 +125,13 @@ public class Stage2Manager : MonoBehaviour
         isGameActive = false;
         if (clearText != null) clearText.SetActive(true);
         Time.timeScale = 0; 
-        Debug.Log("축하합니다! 스테이지 클리어!");
+        Debug.Log("스테이지 클리어!");
     }
 
     void GameOverAndRestart()
     {
         isGameActive = false;
-        Debug.Log("시간 종료! 목표 점수 미달로 재시작합니다.");
-        
-        // 현재 씬을 다시 로드 (재시작)
+        Debug.Log("재시작");
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
