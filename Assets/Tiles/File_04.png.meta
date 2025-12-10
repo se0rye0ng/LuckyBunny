@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: fad935f16c7e4fa42b8d29a002068fc2
+guid: 38f02a0aab9882944b6b931e46f89b3a
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -7902206670693879807
-    second: MazeTile_05_0
+      213: 3040367577819281076
+    second: File_04_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 16
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -96,31 +96,40 @@ TextureImporter:
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: MazeTile_05_0
+      name: File_04_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1
         y: 0
-        width: 16
-        height: 16
+        width: 249
+        height: 250
       alignment: 0
-      pivot: {x: 0.5, y: 0.5}
+      pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
-      physicsShape:
-      - - {x: 8, y: 8}
-        - {x: -8, y: 8}
-        - {x: -8, y: -8}
-        - {x: 8, y: -8}
-      tessellationDetail: 0
+      physicsShape: []
+      tessellationDetail: -1
       bones: []
-      spriteID: 100b19396e8b55290800000000000000
-      internalID: -7902206670693879807
+      spriteID: 4b67886143e813a20800000000000000
+      internalID: 3040367577819281076
       vertices: []
       indices: 
       edges: []
@@ -129,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5ef5d95054803594cb067760a9716c64
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -139,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      MazeTile_05_0: -7902206670693879807
+      File_04_0: 3040367577819281076
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
