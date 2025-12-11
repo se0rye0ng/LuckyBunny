@@ -1,3 +1,4 @@
+/*
 using UnityEngine;
 
 public class OPlayerController : MonoBehaviour
@@ -6,9 +7,6 @@ public class OPlayerController : MonoBehaviour
     // 이동 속도 (Inspector에서 조절 가능)
     [Header("이동 설정")]
     public float moveSpeed = 5.0f;
-    
-    [Header("점프 설정")]  // 새로 추가!
-    public float jumpForce = 7.0f;  // 점프 힘
 
     private Rigidbody2D rb;
     private int clover = 0;
@@ -107,3 +105,4 @@ public class OPlayerController : MonoBehaviour
         }
     }
 }
+*/
