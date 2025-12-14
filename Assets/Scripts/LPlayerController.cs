@@ -135,6 +135,13 @@ public class LPlayerController : MonoBehaviour
             clover++;
             Debug.Log("클로버 획득! 현재 점수: " + clover);
 
+            // [추가] 타이머 찾아서 멈추기!
+            var timer = UnityEngine.Object.FindFirstObjectByType<GameTimer>();
+            if (timer != null) 
+            {
+                timer.StopTimer(); // 시간 정지!
+            }
+
             var game = UnityEngine.Object.FindFirstObjectByType<LGameController>();
             if (game != null)
             {
