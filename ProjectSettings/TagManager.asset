@@ -5,7 +5,9 @@ TagManager:
   serializedVersion: 3
   tags:
   - Clover
-  - Obstacle
+  - RedClover
+  - GreenClover
+  - WhiteClover
   layers:
   - Default
   - TransparentFX
