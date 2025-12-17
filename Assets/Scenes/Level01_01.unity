@@ -571,16 +571,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 3
   normalizeDiagonal: 1
-  blurWeight: 1
   blurDuration: 5
-  audioSource: {fileID: 0}
-  redSound: {fileID: 0}
-  whiteSound: {fileID: 0}
-  greenSound: {fileID: 0}
+  audioSource: {fileID: 246711775}
+  redSound: {fileID: 8300000, guid: 17c9b64b5eebfc44bbd0793846fe4e36, type: 3}
+  whiteSound: {fileID: 8300000, guid: d62be7104b7574b43aa9a68e8f2354c2, type: 3}
+  greenSound: {fileID: 8300000, guid: 3fcb22af94396974ba1e1a26680ddc34, type: 3}
   sizeBoostMultiplier: 1.5
-  sizeBoostDuration: 5
-  speedBoostMultiplier: 1.5
-  speedBoostDuration: 5
 --- !u!70 &246711773
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -658,7 +654,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
-  m_Volume: 1
+  m_Volume: 0.5
   m_Pitch: 1
   Loop: 0
   Mute: 0
@@ -910,7 +906,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 82.88, y: -25.69}
+  m_AnchoredPosition: {x: 85.4, y: -25.69}
   m_SizeDelta: {x: 300, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &362438383
@@ -2094,7 +2090,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 0}
-  m_Resource: {fileID: 0}
+  m_Resource: {fileID: 8300000, guid: a723e657065a20f4dbf2d8c2fa11f8f7, type: 3}
   m_PlayOnAwake: 1
   m_Volume: 0.5
   m_Pitch: 1
