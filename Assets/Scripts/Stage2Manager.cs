@@ -2,35 +2,32 @@ using UnityEngine;
 using TMPro;            
 using UnityEngine.UI;   
 using UnityEngine.SceneManagement; 
-using System.Collections; // [필수] 코루틴 사용을 위해 추가
+using System.Collections; 
+using System.Collections.Generic; 
 
 public class Stage2Manager : MonoBehaviour
 {
     [Header("게임 기본 설정")]
-    public float gameTime = 30.0f; 
-    public int targetScore = 10;   
-
-    [Header("다음 단계 설정")]
-    // 여기에 "level03_Intro 1" 또는 "EndingScene"을 적으면 거기로 이동합니다.
+    public float gameTime = 60.0f; 
     public string nextSceneName = "level03_Intro 1"; 
-
-    [Header("오디오 설정")]
-    public AudioSource bgmAudioSource; // 배경음악이 나오는 오디오 소스 연결
-    public float fadeDuration = 2.0f;  // 음악이 꺼지는 데 걸리는 시간 (2초)
 
     [Header("UI 연결")]
     public TextMeshProUGUI timeText;  
-    public TextMeshProUGUI scoreText; 
     public Image gaugeImage;       
-    public Sprite[] gaugeSprites;  
     public GameObject clearText;      
 
-    [Header("구멍 및 생성 설정")]
+    [Header("게이지 바 설정")]
+    public Sprite[] gaugeSprites;  // 이미지 순서대로 (0:빨강 완료, 1:주황 완료...)
+    public List<Vector3> barScales; // 크기 조절용 리스트
+
+    [Header("구멍 시스템 (사용 안 해도 유지)")]
     public Hole[] holes;           
     public float spawnInterval = 1.0f; 
 
+    // 내부 변수
     private float currentTimer;
-    private int currentScore = 0;
+    private int currentStep = 0; // 현재 단계 (0:빨강 기다리는 중)
+    private int targetStep = 7;  
     private float spawnTimer = 0f;
     private bool isGameActive = true;
 
@@ -43,8 +40,16 @@ public class Stage2Manager : MonoBehaviour
 
     void Start()
     {
-        holes = FindObjectsByType<Hole>(FindObjectsSortMode.None);
         currentTimer = gameTime;
+        
+        // 크기 설정 리스트 초기화 (에러 방지)
+        if (barScales == null || barScales.Count == 0)
+        {
+            barScales = new List<Vector3>();
+            for(int i=0; i < gaugeSprites.Length; i++) 
+                barScales.Add(Vector3.one);
+        }
+
         UpdateUI(); 
     }
 
@@ -53,97 +58,83 @@ public class Stage2Manager : MonoBehaviour
         if (!isGameActive) return;
 
         currentTimer -= Time.deltaTime;
-        
         if (currentTimer <= 0)
         {
             currentTimer = 0;
-            if (currentScore < targetScore) GameOverAndRestart();
-            else StartCoroutine(GameClearRoutine()); // 시간 끝났는데 점수 넘으면 클리어
+            GameOverAndRestart(); 
         }
-
-        spawnTimer += Time.deltaTime;
-        if (spawnTimer >= spawnInterval)
-        {
-            TrySpawnRandom();
-            spawnTimer = 0f;
-        }
-
         UpdateUI();
     }
 
-    public void AddScore(int type)
+    // [추가] 순서가 맞는지 확인만 하는 함수 (FallingItem이 물어봄)
+    public bool CheckIsCorrectStep(int colorIndex)
+    {
+        // 99번(폭탄)은 무조건 오답 처리 (튕겨내기 원하면 false, 먹어서 터지게 하려면 별도 처리)
+        if (colorIndex == 99) return false; 
+
+        return colorIndex == currentStep;
+    }
+
+    // 실제 점수/단계 적용 함수
+    public void ProcessInteraction(int type)
     {
         if (!isGameActive) return;
 
-        int points = 0;
-        if (type == 0) points = -1;       
-        else if (type == 1) points = 1;   
-        else if (type == 2) points = 2;   
-        else if (type == -1) points = -1; 
-
-        currentScore += points;
-        currentScore = Mathf.Clamp(currentScore, 0, targetScore);
-
-        UpdateUI(); 
-
-        // 목표 점수 도달 시 클리어 루틴 시작!
-        if (currentScore >= targetScore)
+        // 폭탄 로직 (필요시 사용)
+        if (type == 99)
         {
-            StartCoroutine(GameClearRoutine());
+            if (currentStep > 0) currentStep--;
+            UpdateUI();
+            return;
+        }
+
+        // 순서 맞으면 단계 상승
+        if (type == currentStep)
+        {
+            currentStep++; 
+            UpdateUI();
+
+            if (currentStep >= targetStep)
+            {
+                StartCoroutine(GameClearRoutine());
+            }
         }
     }
 
     void UpdateUI()
     {
         if (timeText != null) timeText.text = $"Time: {currentTimer:F0}";
-        if (scoreText != null) scoreText.text = $"{currentScore} / {targetScore}";
 
         if (gaugeImage != null && gaugeSprites != null && gaugeSprites.Length > 0)
         {
-            int spriteIndex = Mathf.Clamp(currentScore, 0, gaugeSprites.Length - 1);
+            int spriteIndex = Mathf.Clamp(currentStep, 0, gaugeSprites.Length - 1);
+
+            // 1. 이미지 교체
             gaugeImage.sprite = gaugeSprites[spriteIndex];
+
+            // 2. [수정됨] 리스트에 값이 있을 때만 크기 적용 (0,0,0이면 무시)
+            // 만약 Inspector에서 Bar Scales 값을 모두 0으로 두면, 화면에서 설정한 크기가 유지됩니다.
+            if (spriteIndex < barScales.Count)
+            {
+                // 리스트에 적힌 값이 (0,0,0)이나 (1,1,1)이 아닐 때만 적용하고 싶다면 조건을 걸 수도 있지만,
+                // 지금은 그냥 리스트의 X값이 1보다 클 때만 강제로 적용하도록 해보겠습니다.
+                if (barScales[spriteIndex].x > 1.0f || barScales[spriteIndex].y > 1.0f)
+                {
+                     gaugeImage.rectTransform.localScale = barScales[spriteIndex];
+                }
+            }
+            
+            // 또는 아예 크기 조절 코드를 지워버리면(= 주석 처리하면) 화면에서 늘린 그대로 나옵니다!
+            // gaugeImage.rectTransform.localScale = barScales[spriteIndex];  <-- 이 줄을 지우면 해결
         }
     }
 
-    void TrySpawnRandom()
-    {
-        if (holes.Length == 0) return;
-        int randomIndex = Random.Range(0, holes.Length);
-        Hole selectedHole = holes[randomIndex];
-        if (!selectedHole.isActive) selectedHole.SpawnClover();
-    }
-
-    // [핵심] 페이드아웃 및 씬 이동 처리
     IEnumerator GameClearRoutine()
     {
-        isGameActive = false; // 게임 멈춤 (타이머, 구멍 생성 정지)
-        
+        isGameActive = false;
         if (clearText != null) clearText.SetActive(true);
-        Debug.Log("스테이지 클리어! 페이드아웃 시작...");
-
-        // BGM 페이드아웃 로직
-        if (bgmAudioSource != null)
-        {
-            float startVolume = bgmAudioSource.volume;
-            float timer = 0;
-
-            while (timer < fadeDuration)
-            {
-                timer += Time.deltaTime;
-                // 시간이 지날수록 볼륨을 0으로 줄임
-                bgmAudioSource.volume = Mathf.Lerp(startVolume, 0, timer / fadeDuration);
-                yield return null;
-            }
-            bgmAudioSource.volume = 0; // 확실하게 0으로
-        }
-        else
-        {
-            // 오디오 소스가 없으면 그냥 설정한 시간만큼 대기
-            yield return new WaitForSeconds(fadeDuration);
-        }
-
-        // 다음 씬으로 이동
-        Debug.Log($"씬 이동: {nextSceneName}");
+        Time.timeScale = 1.0f; 
+        yield return new WaitForSeconds(2.0f);
         SceneManager.LoadScene(nextSceneName);
     }
 

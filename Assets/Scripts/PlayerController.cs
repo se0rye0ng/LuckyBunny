@@ -1,95 +1,106 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
-    public float maxSpeed = 7f;
-    public float itemHeight = 1f;
-    public GameObject clearText;
-    public float friction = 2.5f;
-    public float xLimit = 8.0f;
+    [Header("빙판길 이동 설정")]
+    public float maxSpeed = 5.0f;      
+    public float acceleration = 20.0f; // 가속도 (빠릿하게)
+    public float deceleration = 10.0f; // 감속도 (덜 미끄러지게)
 
-    private float currentVelocity = 0f;
+    [Header("맵 제한 좌표")]
+    public float minX = -8f, maxX = 8f;
+    public float minY = -4.5f, maxY = 4.5f;
+    
+    [Header("텔레포트 위치 보정")]
+    public float teleportOffsetX = 0f; 
+    public float teleportOffsetY = 0.5f; 
 
-    [SerializeField]
-    private int stackCount = 0;
-    private const int maxStack = 7;
+    private Vector2 currentVelocity; 
+
+    void Start() { }
 
     void Update()
     {
-        float xInput = Input.GetAxisRaw("Horizontal");
-        
-        float targetVelocity = xInput * maxSpeed;
-        currentVelocity = Mathf.Lerp(currentVelocity, targetVelocity, friction * Time.deltaTime);
+        // 1. 이동 로직
+        float xInput = Input.GetAxisRaw("Horizontal"); 
+        float yInput = Input.GetAxisRaw("Vertical");   
 
-        transform.Translate(Vector3.right * currentVelocity * Time.deltaTime);
+        Vector2 inputDir = new Vector2(xInput, yInput).normalized;
 
-        Vector3 currentPos = transform.position;
-        currentPos.x = Mathf.Clamp(currentPos.x, -xLimit, xLimit);
-        transform.position = currentPos;
+        if (inputDir.magnitude > 0)
+            currentVelocity = Vector2.MoveTowards(currentVelocity, inputDir * maxSpeed, acceleration * Time.deltaTime);
+        else
+            currentVelocity = Vector2.MoveTowards(currentVelocity, Vector2.zero, deceleration * Time.deltaTime);
+
+        transform.Translate(currentVelocity * Time.deltaTime);
+
+        // 맵 제한
+        Vector3 clampedPos = transform.position;
+        clampedPos.x = Mathf.Clamp(clampedPos.x, minX, maxX);
+        clampedPos.y = Mathf.Clamp(clampedPos.y, minY, maxY);
+        transform.position = clampedPos;
+
+        // 2. 구멍 상호작용
+        if (Input.GetKeyDown(KeyCode.Space)) Interact();
     }
 
-    public int AddItemToStack(GameObject item, bool isBadItem, int itemColorIndex)
+    void Interact()
     {
-        if (isBadItem || (itemColorIndex != stackCount))
+        Collider2D hit = Physics2D.OverlapCircle(transform.position, 0.7f);
+        if (hit != null)
         {
-            if (stackCount > 0)
+            Hole holeScript = hit.GetComponent<Hole>();
+            if (holeScript == null) holeScript = hit.GetComponentInParent<Hole>();
+            if (holeScript != null)
             {
-                DropTopItem();
+                if (holeScript.connectedHole != null)
+                {
+                    transform.position = holeScript.connectedHole.transform.position + new Vector3(teleportOffsetX, teleportOffsetY, 0);
+                    currentVelocity = Vector2.zero;
+                    return; 
+                }
+                int type = holeScript.OnInteract(); 
+                if (type != -1)
+                {
+                    if (Stage2Manager.instance != null) Stage2Manager.instance.ProcessInteraction(type);
+                    // else if (Stage3Manager.instance != null) Stage3Manager.instance.AddScore(type);
+                }
             }
-            
-            Destroy(item);
-            return 1;
         }
-
-        if (stackCount >= maxStack) return 0;
-
-        float diffX = item.transform.position.x - transform.position.x;
-        bool isPerfect = Mathf.Abs(diffX) < 0.2f;
-
-        item.transform.SetParent(transform);
-        
-        float targetX = isPerfect ? 0 : diffX;
-        
-        item.transform.localPosition = new Vector3(targetX, (stackCount + 1) * itemHeight, 0);
-        item.transform.localRotation = Quaternion.identity;
-
-        stackCount++;
-
-        if(stackCount == maxStack)
-        {
-            if(clearText != null) clearText.SetActive(true);
-            Time.timeScale = 0;
-        }
-
-        return isPerfect ? 2 : 1;
     }
 
-    void DropTopItem()
+    // [핵심] FallingItem 처리 함수 (폭탄 로직 추가됨)
+    public int AddItemToStack(GameObject itemObj, bool isBad, int colorIndex)
     {
-        if (transform.childCount == 0) return;
-
-        Transform topItem = transform.GetChild(transform.childCount - 1);
-        
-        EnablePhysics(topItem.gameObject);
-        
-        stackCount--;
-    }
-
-    void EnablePhysics(GameObject obj)
-    {
-        obj.transform.SetParent(null);
-        
-        Rigidbody2D rb = obj.GetComponent<Rigidbody2D>();
-        BoxCollider2D col = obj.GetComponent<BoxCollider2D>();
-
-        if (rb != null)
+        if (Stage2Manager.instance != null)
         {
-            rb.simulated = true;
-            rb.bodyType = RigidbodyType2D.Dynamic;
-            rb.linearVelocity = Vector2.zero;
-            rb.AddForce(new Vector2(Random.Range(-1f, 1f), 2f), ForceMode2D.Impulse);
-            rb.AddTorque(Random.Range(-30f, 30f));
+            // 1. [추가됨] 나쁜 아이템(폭탄)일 경우
+            if (isBad)
+            {
+                Debug.Log("폭탄 맞음! 점수 깎임");
+                // 99번을 보내면 매니저가 알아서 1단계 깎습니다.
+                Stage2Manager.instance.ProcessInteraction(99); 
+                return 1; // 1을 리턴하면 폭탄이 사라집니다 (Destroy)
+            }
+
+            // 2. 정답 클로버인지 확인
+            bool isCorrect = Stage2Manager.instance.CheckIsCorrectStep(colorIndex);
+
+            if (isCorrect)
+            {
+                // 정답 -> 점수 오름 -> 클로버 사라짐
+                Stage2Manager.instance.ProcessInteraction(colorIndex);
+                Debug.Log("정답 클로버 획득!");
+                return 1; 
+            }
+            else
+            {
+                // 오답 -> 튕겨나감
+                Debug.Log("틀린 클로버! 튕겨냄");
+                return 0; 
+            }
         }
-        if (col != null) col.enabled = true;
+        return 0; // 매니저 없으면 튕겨냄
     }
 }
