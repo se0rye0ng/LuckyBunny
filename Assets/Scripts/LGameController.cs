@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class LGameController : MonoBehaviour
 {
     [Header("Scene Settings")]
-    public string nextSceneName = "level02_Intro";
+    public string nextSceneName = "Level2";
 
     // Loads the configured next scene. Call from player when appropriate.
     public void GoToNextLevel()
