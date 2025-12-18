@@ -16,7 +16,6 @@ public class NewPlayerController : MonoBehaviour
     public float teleportOffsetY = 0.5f; 
 
     [Header("연결 요소")]
-    public Transform gridParent; 
     public GameObject fogEffect; 
     public GameObject floatingTextPrefab; 
 
@@ -82,6 +81,10 @@ public class NewPlayerController : MonoBehaviour
                     if (holeScript.connectedHole != null)
                     {
                         Debug.Log("토끼굴 이동!");
+                        
+                        // [소리 추가] 순간이동 소리
+                        if (Stage3Manager.instance != null) Stage3Manager.instance.PlaySFX("Teleport");
+
                         Vector3 targetPos = holeScript.connectedHole.transform.position;
                         targetPos.x += teleportOffsetX;
                         targetPos.y += teleportOffsetY; 
@@ -93,24 +96,25 @@ public class NewPlayerController : MonoBehaviour
                     // [클로버 수확 시도]
                     int type = holeScript.OnInteract(); 
                     
-                    if (type != -1) // 클로버 획득 성공!
+                    if (type != -1) // 무언가 획득!
                     {
-                        // [핵심 수정 1] Stage3Manager에게 점수 추가 명령! (이게 빠져있었습니다)
                         if (Stage3Manager.instance != null)
                         {
+                            // 점수 적용
                             Stage3Manager.instance.AddScore(type);
-                        }
-                        // 혹시 Stage2Manager를 쓸 경우를 대비
-                        else if (Stage2Manager.instance != null)
-                        {
-                            Stage2Manager.instance.ProcessInteraction(type);
+
+                            // [소리 추가] 타입별 소리 재생
+                            if (type == 0)      Stage3Manager.instance.PlaySFX("Red");    // 빨강(감점)
+                            else if (type == 1) Stage3Manager.instance.PlaySFX("Green");  // 초록
+                            else if (type == 2) Stage3Manager.instance.PlaySFX("Pink");   // 분홍
                         }
 
-                        // 점수 효과 띄우기
+                        // 텍스트 효과
                         if (type == 0) ShowFloatingText("-1", Color.red); 
                         else if (type == 1) ShowFloatingText("+1", Color.green); 
                         else if (type == 2) ShowFloatingText("+3", new Color(1f, 0.5f, 0.8f)); 
 
+                        // 빨강 클로버 저주 효과
                         if (type == 0)
                         {
                             StopCoroutine("InvertRoutine");
@@ -119,31 +123,22 @@ public class NewPlayerController : MonoBehaviour
                     }
                     else // 빈 구멍 클릭
                     {
-                        Debug.Log("빈 구멍입니다. 감점!");
-                        
-                        // [핵심 수정 2] 빈 구멍일 때도 점수 깎으라고 명령!
+                        // [소리 추가] 빈 구멍 소리
                         if (Stage3Manager.instance != null)
                         {
-                            Stage3Manager.instance.AddScore(-1); 
+                             Stage3Manager.instance.PlaySFX("Empty");
+                             Stage3Manager.instance.AddScore(-1); // 감점
                         }
-
                         ShowFloatingText("-1", Color.gray); 
                     }
                 }
             }
-            else
-            {
-                Debug.Log("너무 멉니다.");
-            }
         }
     }
 
-    // --------------------------------------------------------------------------
-    // [핵심 수정 3] FallingItem 오류 해결을 위한 함수 추가
-    // --------------------------------------------------------------------------
+    // FallingItem 호환용 함수
     public int AddItemToStack(GameObject itemObj, bool isBad, int colorIndex)
     {
-        // FallingItem 스크립트가 에러 나지 않도록 "잘 받았다(1)" 신호를 줍니다.
         return 1; 
     }
 
@@ -155,16 +150,12 @@ public class NewPlayerController : MonoBehaviour
             GameObject obj = Instantiate(floatingTextPrefab, spawnPos, Quaternion.identity);
             
             FloatingText ft = obj.GetComponent<FloatingText>();
-            if (ft != null)
-            {
-                ft.SetText(msg, color);
-            }
+            if (ft != null) ft.SetText(msg, color);
         }
     }
 
     IEnumerator InvertRoutine()
     {
-        Debug.Log("저주 시작!");
         isInverted = true;
         if(fogEffect != null) fogEffect.SetActive(true);
         SpriteRenderer sr = GetComponent<SpriteRenderer>();
@@ -175,6 +166,5 @@ public class NewPlayerController : MonoBehaviour
         isInverted = false; 
         if(fogEffect != null) fogEffect.SetActive(false); 
         sr.color = Color.white; 
-        Debug.Log("저주 해제.");
     }
 }

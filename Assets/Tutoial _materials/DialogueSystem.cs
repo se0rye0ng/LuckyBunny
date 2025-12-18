@@ -75,9 +75,8 @@ public class DialogueSystem : MonoBehaviour
         }
         else
         {
-            // 모든 대사(Element 8)가 끝나면 Level01_01 씬으로 이동합니다!
-            Debug.Log("모든 튜토리얼이 끝났습니다. 게임 씬으로 이동합니다.");
-            SceneManager.LoadScene("Level01_01"); 
+            Debug.Log("모든 튜토리얼이 끝났습니다. 로딩 씬으로 이동합니다.");
+            SceneManager.LoadScene("level01_Intro"); 
         }
     }
 

@@ -2,10 +2,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public class GotoLv1 : MonoBehaviour
+public class GotoLv3 : MonoBehaviour
 {
     [Header("이동 설정")]
-    public string nextSceneName = "Level01_01";
+    public string nextSceneName = "Level3";
     public float waitTime = 6.0f;
 
     void Start()
@@ -17,7 +17,7 @@ public class GotoLv1 : MonoBehaviour
     {
         yield return new WaitForSeconds(waitTime);
 
-        Debug.Log("Level1로 이동합니다: " + nextSceneName);
+        Debug.Log("Level3로 이동합니다: " + nextSceneName);
         SceneManager.LoadScene(nextSceneName);
     }
 }

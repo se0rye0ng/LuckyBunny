@@ -5,8 +5,8 @@ public class PlayerController : MonoBehaviour
 {
     [Header("빙판길 이동 설정")]
     public float maxSpeed = 5.0f;      
-    public float acceleration = 20.0f; // 가속도 (빠릿하게)
-    public float deceleration = 10.0f; // 감속도 (덜 미끄러지게)
+    public float acceleration = 20.0f; 
+    public float deceleration = 10.0f; 
 
     [Header("맵 제한 좌표")]
     public float minX = -8f, maxX = 8f;
@@ -22,7 +22,6 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // 1. 이동 로직
         float xInput = Input.GetAxisRaw("Horizontal"); 
         float yInput = Input.GetAxisRaw("Vertical");   
 
@@ -35,13 +34,11 @@ public class PlayerController : MonoBehaviour
 
         transform.Translate(currentVelocity * Time.deltaTime);
 
-        // 맵 제한
         Vector3 clampedPos = transform.position;
         clampedPos.x = Mathf.Clamp(clampedPos.x, minX, maxX);
         clampedPos.y = Mathf.Clamp(clampedPos.y, minY, maxY);
         transform.position = clampedPos;
 
-        // 2. 구멍 상호작용
         if (Input.GetKeyDown(KeyCode.Space)) Interact();
     }
 
@@ -64,24 +61,23 @@ public class PlayerController : MonoBehaviour
                 if (type != -1)
                 {
                     if (Stage2Manager.instance != null) Stage2Manager.instance.ProcessInteraction(type);
-                    // else if (Stage3Manager.instance != null) Stage3Manager.instance.AddScore(type);
                 }
             }
         }
     }
 
-    // [핵심] FallingItem 처리 함수 (폭탄 로직 추가됨)
+    // [핵심] 소리 재생 코드 추가됨
     public int AddItemToStack(GameObject itemObj, bool isBad, int colorIndex)
     {
         if (Stage2Manager.instance != null)
         {
-            // 1. [추가됨] 나쁜 아이템(폭탄)일 경우
+            // 1. 나쁜 아이템(폭탄)일 경우 -> 빨간 소리
             if (isBad)
             {
                 Debug.Log("폭탄 맞음! 점수 깎임");
-                // 99번을 보내면 매니저가 알아서 1단계 깎습니다.
+                Stage2Manager.instance.PlaySFX(true); // true = 나쁜 소리 재생해라!
                 Stage2Manager.instance.ProcessInteraction(99); 
-                return 1; // 1을 리턴하면 폭탄이 사라집니다 (Destroy)
+                return 1; 
             }
 
             // 2. 정답 클로버인지 확인
@@ -89,18 +85,19 @@ public class PlayerController : MonoBehaviour
 
             if (isCorrect)
             {
-                // 정답 -> 점수 오름 -> 클로버 사라짐
-                Stage2Manager.instance.ProcessInteraction(colorIndex);
+                // 정답 -> 초록 소리
                 Debug.Log("정답 클로버 획득!");
+                Stage2Manager.instance.PlaySFX(false); // false = 좋은 소리 재생해라!
+                Stage2Manager.instance.ProcessInteraction(colorIndex);
                 return 1; 
             }
             else
             {
-                // 오답 -> 튕겨나감
+                // 오답 -> 튕겨나감 (소리 없음 혹은 원하면 튕기는 소리 추가 가능)
                 Debug.Log("틀린 클로버! 튕겨냄");
                 return 0; 
             }
         }
-        return 0; // 매니저 없으면 튕겨냄
+        return 0; 
     }
 }

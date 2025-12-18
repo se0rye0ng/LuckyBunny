@@ -6,7 +6,7 @@ public class GotoLv2 : MonoBehaviour
 {
     [Header("이동 설정")]
     public string nextSceneName = "Level2";
-    public float waitTime = 5.0f;
+    public float waitTime = 6.0f;
 
     void Start()
     {
